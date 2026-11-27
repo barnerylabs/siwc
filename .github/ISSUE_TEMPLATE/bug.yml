@@ -1,0 +1,111 @@
+name: Bug report
+description: Something in siwc does not work as documented.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A security vulnerability does not belong here. Report it privately via
+        [GitHub Private Vulnerability Reporting](https://github.com/barnerylabs/siwc/security/advisories/new)
+        (see the [security policy](https://github.com/barnerylabs/siwc/security/policy)).
+
+        Replace every token, authorization code, client ID, account ID and
+        e-mail address with a placeholder before you post. siwc never needs a
+        real one to reproduce a fault: the tests run against an in-memory
+        provider.
+  - type: input
+    id: version
+    attributes:
+      label: siwc version
+      description: The version from Cargo.lock, or the commit.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: rust
+    attributes:
+      label: Rust version
+      description: The output of `rustc --version`.
+      placeholder: rustc 1.89.0
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Any (the fault is in code every platform runs)
+        - Linux
+        - macOS
+        - Windows
+        - Other (name it below)
+    validations:
+      required: true
+  - type: dropdown
+    id: setup
+    attributes:
+      label: How the app uses siwc
+      options:
+        - Through Client
+        - The protocol or plan modules directly
+        - Any of these (the fault is in shared code, such as the store)
+    validations:
+      required: true
+  - type: checkboxes
+    id: features
+    attributes:
+      label: Features
+      options:
+        - label: The `https` feature is on
+        - label: The `ureq` feature is on
+        - label: The `keychain` feature is on
+        - label: The `testing` feature is on
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: Include the error kind (`ErrorKind`) and its message if there was one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The smallest code or the steps that show it. A failing test against the in-memory provider is the best form.
+      render: rust
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Optional. Panics or log lines, with every secret replaced.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: ai
+    attributes:
+      label: AI tools
+      description: The tool and the exact model that helped find or write this, or `none` ([AI tools](https://github.com/barnerylabs/siwc/blob/main/CONTRIBUTING.md#ai-tools)).
+      placeholder: none
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before posting
+      options:
+        - label: This is not a security vulnerability.
+          required: true
+        - label: The report contains no real token, code, client ID or e-mail address.
+          required: true
+        - label: I reproduced the problem myself and wrote or checked this report; no agent submitted it on its own.
+          required: true

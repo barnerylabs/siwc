@@ -1,0 +1,8 @@
+
+[[licenses.exceptions]]
+crate = "libfuzzer-sys@=0.4.13"
+allow = ["NCSA"]
+
+[[bans.skip]]
+crate = "getrandom@=0.4.3"
+reason = "jobserver, enabled by libFuzzer's parallel C++ build, uses getrandom 0.4 on Windows while ring uses 0.2"

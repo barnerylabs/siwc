@@ -1,0 +1,6 @@
+/target
+*.pem
+# Synthetic certificates of the HTTPS transport's test.
+!crates/siwc/tests/support/tls/*.pem
+*.token
+.DS_Store

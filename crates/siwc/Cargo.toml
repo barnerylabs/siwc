@@ -1,0 +1,88 @@
+[package]
+name = "siwc"
+description = "Sign in with ChatGPT for Rust desktop apps and CLI tools: OAuth 2.0 login with PKCE, token refresh, and streamed OpenAI Responses API requests on the user's ChatGPT plan, without an API key. Unofficial; not affiliated with or endorsed by OpenAI."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+keywords = ["chatgpt", "openai", "oauth", "pkce", "authentication"]
+categories = ["authentication", "api-bindings"]
+# The package carries the library, its examples, README and licences, and
+# offline tests with synthetic fixtures.
+readme = "../../README.md"
+include = ["/src/**/*.rs", "/examples/**/*.rs", "/tests/**", "/LICENSE-*"]
+# One test program for the crate instead of one per file.
+autotests = false
+
+[[test]]
+name = "suite"
+path = "tests/suite.rs"
+# The offline fixtures inject their own entropy.
+required-features = ["testing"]
+
+# Sign-in and one streamed answer on the user's plan.
+[[example]]
+name = "quickstart"
+required-features = ["https", "keychain"]
+
+# A command-line walk through the client; its argument parsing has tests.
+[[example]]
+name = "sign_in"
+required-features = ["https"]
+test = true
+
+[[example]]
+name = "desktop"
+required-features = ["https", "keychain"]
+test = true
+
+# Sealed files with a key from the system keychain.
+[[example]]
+name = "keychain"
+required-features = ["https", "keychain"]
+
+# A custom `Store` keeping entries in the OS keychain and locks in `PrivateFiles`.
+[[example]]
+name = "keychain_store"
+required-features = ["https", "testing"]
+test = true
+
+# docs.rs shows the optional parts and their feature badges as well.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+# A blocking HTTPS transport for the crate's requests to the provider: sign-in,
+# token renewal, the model list and streamed plan requests (`Client::stream_response`).
+https = ["dep:rustls", "dep:webpki-roots"]
+# Blocking HTTP transport using ureq, with the same explicit certificate and
+# proxy configuration as `https`.
+ureq = ["dep:ureq", "dep:rustls", "dep:webpki-root-certs", "dep:webpki-roots"]
+# A sealing key in the system keychain: `security` on macOS, `secret-tool`
+# on Linux and the Credential Manager on Windows.
+keychain = ["dep:keyring-core", "dep:windows-native-keyring-store"]
+# In-memory `FakeProvider`, `FakeClock` and `store::conformance` checks for
+# application test suites.
+testing = []
+
+[dependencies]
+ring.workspace = true
+rustls = { workspace = true, optional = true }
+serde_core.workspace = true
+serde_json.workspace = true
+ureq = { workspace = true, optional = true }
+webpki-roots = { workspace = true, optional = true }
+webpki-root-certs = { workspace = true, optional = true }
+zeroize.workspace = true
+
+[lints]
+workspace = true
+
+# The Credential Manager for the `keychain` feature; the workspace forbids
+# the `unsafe` a direct `CredReadW` call needs.
+[target.'cfg(windows)'.dependencies]
+keyring-core = { version = "1.0.1", optional = true }
+windows-native-keyring-store = { version = "1.1", default-features = false, optional = true }

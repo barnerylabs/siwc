@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_INCREMENTAL: '0'
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: ${{ matrix.os }} (stable)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Verify licence copies and symlink-free tree
+        if: runner.os == 'Linux'
+        run: |
+          test -z "$(git ls-files -s | awk '$1 == "120000"')"
+          cmp -s LICENSE-APACHE crates/siwc/LICENSE-APACHE
+          cmp -s LICENSE-MIT crates/siwc/LICENSE-MIT
+      - name: Install stable Rust toolchain
+        run: rustup toolchain install stable --profile minimal --component rustfmt,clippy --no-self-update
+      - name: Check formatting
+        if: runner.os == 'Linux'
+        run: cargo +stable fmt --all -- --check
+      - name: Clippy (default features)
+        run: cargo +stable clippy --workspace --locked --all-targets -- -D warnings
+      - name: Clippy (all features)
+        run: cargo +stable clippy --workspace --locked --all-targets --all-features -- -D warnings
+      - name: Clippy (fuzzing entry points)
+        if: runner.os == 'Linux'
+        env:
+          RUSTFLAGS: --cfg fuzzing
+        run: cargo +stable clippy --workspace --locked --all-targets --all-features -- -D warnings
+      - name: Test suite (default features)
+        if: runner.os == 'Linux'
+        run: cargo +stable test --workspace --locked --no-fail-fast
+      - name: Test suite (https and keychain features)
+        if: runner.os == 'Linux'
+        run: cargo +stable test --workspace --locked --no-fail-fast --features https,keychain
+      - name: Test suite (all features)
+        run: cargo +stable test --workspace --locked --no-fail-fast --all-features
+      - name: Rustdoc (default features)
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo +stable doc --workspace --locked --no-deps
+      - name: Rustdoc (all features)
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo +stable doc --workspace --locked --no-deps --all-features
+      - name: Verify crates.io package archive
+        if: runner.os == 'Linux'
+        run: cargo +stable package --locked -p siwc
+
+  msrv:
+    name: MSRV (1.89.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Install Rust 1.89.0
+        run: rustup toolchain install 1.89.0 --profile minimal --no-self-update
+      - name: Check MSRV (default and all features)
+        run: |
+          grep -qx 'rust-version = "1.89"' Cargo.toml
+          cargo +1.89.0 check --workspace --locked --all-targets
+          cargo +1.89.0 check --workspace --locked --all-targets --all-features
+
+  minimal-versions:
+    name: Minimal versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Install the stable and pinned nightly toolchains
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          rustup toolchain install nightly-2026-11-12 --profile minimal --no-self-update
+      - name: Build with the lowest allowed direct dependencies
+        run: |
+          cargo +nightly-2026-11-12 update -Z direct-minimal-versions
+          cargo +stable check --workspace --all-targets --all-features
+
+  deny:
+    name: Supply-chain policy (cargo-deny)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Install stable Rust toolchain
+        run: rustup toolchain install stable --profile minimal --no-self-update
+      - name: Install the pinned prebuilt cargo-deny
+        run: |
+          archive="$RUNNER_TEMP/cargo-deny.tar.gz"
+          curl --fail --silent --show-error --location --output "$archive" \
+            https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+          echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/cargo-deny"
+          tar -xzf "$archive" --directory "$RUNNER_TEMP/cargo-deny" --strip-components=1
+          echo "$RUNNER_TEMP/cargo-deny" >> "$GITHUB_PATH"
+      - name: Check licences, bans, advisories and sources
+        run: cargo +stable deny --locked check bans licenses advisories sources
+      # The fuzz crate is its own workspace; libFuzzer needs two exceptions.
+      - name: Check the fuzz workspace
+        run: |
+          cat deny.toml fuzz/deny-exceptions.toml > "$RUNNER_TEMP/fuzz-deny.toml"
+          cargo +stable deny --manifest-path fuzz/Cargo.toml --config "$RUNNER_TEMP/fuzz-deny.toml" \
+            --locked check bans licenses advisories sources
+
+  # Each fuzz target runs under libFuzzer for a bounded time from the seeds
+  # in fuzz/seeds. The fuzz crate is not part of the
+  # workspace or the published package.
+  fuzz:
+    name: Fuzz targets (30 s each)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Install the pinned nightly toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy --no-self-update
+          rustup toolchain install nightly-2026-11-12 --profile minimal --no-self-update
+      - name: Install the pinned prebuilt cargo-fuzz
+        run: |
+          archive="$RUNNER_TEMP/cargo-fuzz.tar.gz"
+          curl --fail --silent --show-error --location --output "$archive" \
+            https://github.com/rust-fuzz/cargo-fuzz/releases/download/0.13.2/cargo-fuzz-0.13.2-x86_64-unknown-linux-musl.tar.gz
+          echo "b5b704018b63e0f151c17a057ac53b5111e1db545d1b9f72fee79f08a545931c  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/cargo-fuzz"
+          tar -xzf "$archive" --directory "$RUNNER_TEMP/cargo-fuzz" cargo-fuzz
+          echo "$RUNNER_TEMP/cargo-fuzz" >> "$GITHUB_PATH"
+      - name: Check formatting and Clippy of the fuzz targets
+        env:
+          RUSTFLAGS: --cfg fuzzing
+        run: |
+          cargo +stable fmt --manifest-path fuzz/Cargo.toml -- --check
+          cargo +stable clippy --manifest-path fuzz/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Test the stream event seeds
+        env:
+          RUSTFLAGS: --cfg fuzzing
+        run: cargo +stable test --manifest-path fuzz/Cargo.toml --locked --test stream_event_seeds
+      # The prebuilt cargo-fuzz is a musl build and would default to that
+      # target, which has no sanitizer support.
+      - name: Fuzz each target for 30 seconds
+        run: |
+          targets=$(cargo fuzz list)
+          test -n "$targets"
+          for target in $targets; do
+            mkdir -p "fuzz/corpus/$target"
+            # libFuzzer cuts every input at 1 MiB unless told otherwise. The
+            # request target has a seed just above that, the size an earlier
+            # limit stood at, and it has to arrive whole.
+            limit=
+            if [ "$target" = response_request ]; then limit=-max_len=2097152; fi
+            cargo +nightly-2026-11-12 fuzz run --target x86_64-unknown-linux-gnu \
+              "$target" "fuzz/corpus/$target" "fuzz/seeds/$target" -- -max_total_time=30 $limit
+          done

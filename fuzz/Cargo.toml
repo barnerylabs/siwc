@@ -1,0 +1,115 @@
+[package]
+name = "siwc-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "Fuzz targets for the parsers in siwc that read input from outside"
+license = "MIT OR Apache-2.0"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4.13"
+siwc = { version = "0.1.0", path = "../crates/siwc", features = ["https", "testing"] }
+
+# Not a member of the crate's workspace: libFuzzer builds only for fuzzing.
+[workspace]
+
+[[bin]]
+name = "callback"
+path = "fuzz_targets/callback.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "token_response"
+path = "fuzz_targets/token_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "key_set"
+path = "fuzz_targets/key_set.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "request_head"
+path = "fuzz_targets/request_head.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sealed_entry"
+path = "fuzz_targets/sealed_entry.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "https_response"
+path = "fuzz_targets/https_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "stream_event"
+path = "fuzz_targets/stream_event.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "account_bundle"
+path = "fuzz_targets/account_bundle.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "https_stream"
+path = "fuzz_targets/https_stream.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "response_request"
+path = "fuzz_targets/response_request.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "models_response"
+path = "fuzz_targets/models_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "refusal_response"
+path = "fuzz_targets/refusal_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "refresh_response"
+path = "fuzz_targets/refresh_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "revocation_response"
+path = "fuzz_targets/revocation_response.rs"
+test = false
+doc = false
+bench = false

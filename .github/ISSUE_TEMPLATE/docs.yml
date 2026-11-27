@@ -1,0 +1,42 @@
+name: Documentation
+description: The README, API documentation or an example is wrong, unclear or missing something.
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Where
+      description: The file and section, or the item on docs.rs.
+      placeholder: README.md, "Quick start"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+      description: Quote the text if it is wrong, and say what the code or a test does instead.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: What it should say
+      description: Optional. A wording or the question the documentation should answer.
+    validations:
+      required: false
+  - type: input
+    id: ai
+    attributes:
+      label: AI tools
+      description: The tool and the exact model that helped find or write this, or `none` ([AI tools](https://github.com/barnerylabs/siwc/blob/main/CONTRIBUTING.md#ai-tools)).
+      placeholder: none
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before posting
+      options:
+        - label: I wrote or checked this myself; no agent submitted it on its own.
+          required: true

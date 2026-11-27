@@ -1,0 +1,3 @@
+event: error
+data: {"type":"error","code":"subscription_sharing_unsupported_capability","param":"tools[0].type","message":"synthetic"}
+

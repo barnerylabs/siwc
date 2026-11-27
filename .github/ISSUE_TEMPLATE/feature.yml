@@ -1,0 +1,58 @@
+name: Feature request
+description: Something siwc should do that it does not do yet.
+title: "feature: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        siwc signs users in with Sign in with ChatGPT, keeps their tokens
+        safe and sends Responses API requests on their plan. It follows what
+        OpenAI documents for local apps and nothing beyond it, so a feature
+        that needs an undocumented endpoint or parameter waits until OpenAI
+        documents it. siwc does not model the Responses schema: tools,
+        images and earlier turns stay the app's JSON.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you are trying to do
+      description: The app, the situation and what stops you today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help
+      description: The API or behaviour you have in mind. A sketch of the calls is enough.
+      render: rust
+    validations:
+      required: true
+  - type: textarea
+    id: documented
+    attributes:
+      label: Where OpenAI documents it
+      description: Optional. A link to OpenAI's documentation when the feature touches the protocol.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Optional. Workarounds or other crates.
+    validations:
+      required: false
+  - type: input
+    id: ai
+    attributes:
+      label: AI tools
+      description: The tool and the exact model that helped find or write this, or `none` ([AI tools](https://github.com/barnerylabs/siwc/blob/main/CONTRIBUTING.md#ai-tools)).
+      placeholder: none
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before posting
+      options:
+        - label: I wrote or checked this myself; no agent submitted it on its own.
+          required: true

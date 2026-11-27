@@ -1,0 +1,48 @@
+# Dependency policy, checked by `cargo deny`.
+
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+yanked = "deny"
+
+[licenses]
+version = 2
+# Everything the crate links is under one of these. A new licence is a
+# decision, not a default.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "ISC",
+    # subtle, through rustls (feature https).
+    "BSD-3-Clause",
+    # webpki-roots (feature https): a data licence for the root list.
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.93
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+# Enforce a single cryptography implementation and no second TLS or RSA stack.
+deny = [
+    { crate = "openssl", use-instead = "ring" },
+    { crate = "openssl-sys", use-instead = "ring" },
+    { crate = "native-tls", use-instead = "rustls with ring" },
+    { crate = "aws-lc-rs", use-instead = "ring" },
+    { crate = "aws-lc-sys", use-instead = "ring" },
+    { crate = "rsa", use-instead = "ring" },
+    { crate = "jsonwebtoken", use-instead = "protocol/id_token.rs" },
+]
+
+# The `keychain` feature on Windows: `windows-native-keyring-store` needs
+# windows-sys 0.61 while `ring` and `getrandom` stay on 0.52. Both only
+# declare the system's functions.
+[[bans.skip]]
+crate = "windows-sys@0.52.0"
+reason = "ring and getrandom 0.2; the keychain feature adds 0.61"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

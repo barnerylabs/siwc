@@ -1,0 +1,43 @@
+[workspace]
+resolver = "3"
+members = ["crates/siwc"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/barnerylabs/siwc"
+documentation = "https://docs.rs/siwc"
+
+# Direct workspace dependencies with minimal feature sets.
+[workspace.dependencies]
+ring = { version = "0.17.14", default-features = false, features = ["alloc"] }
+rustls = { version = "0.23.46", default-features = false, features = ["ring", "std"] }
+serde_core = { version = "1.0.220", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
+ureq = { version = "~3.5.2", default-features = false, features = ["rustls-no-provider"] }
+webpki-roots = { version = "1", default-features = false }
+webpki-root-certs = { version = "1.0.12", default-features = false }
+zeroize = { version = "1.8.1", default-features = false, features = ["alloc"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+# `fuzzing` is set for cargo-fuzz harnesses; `docsrs` is set on docs.rs.
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)", "cfg(docsrs)"] }
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+# Modules live in `name.rs` beside a `name/` folder, never in `name/mod.rs`.
+mod_module_files = "warn"
+todo = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+allow_attributes_without_reason = "warn"
+print_stdout = "warn"
+print_stderr = "warn"

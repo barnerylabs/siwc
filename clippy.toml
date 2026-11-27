@@ -1,0 +1,3 @@
+# Tests may unwrap; library code may not.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

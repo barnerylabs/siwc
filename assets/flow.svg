@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 316" width="960" height="316" role="img" aria-labelledby="title desc">
+  <title id="title">How siwc connects a local Rust app to a user's ChatGPT plan</title>
+  <desc id="desc">Three columns: the system browser, your app with siwc, and OpenAI's two hosts. Step 1: the app opens a local start link in the browser, which signs the user in at auth.openai.com. Step 2: the browser returns to a one-shot listener on 127.0.0.1 with an authorization code and, when an account is added, a new client ID. Step 3: siwc exchanges the code at auth.openai.com with its PKCE verifier, verifies the ID token and stores the account in the app's store, such as files sealed with a keychain key; it renews the tokens there later. Step 4: plan requests go to api.openai.com with the account's access token, through the Https or Ureq transport or the app's own HTTP client.</desc>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --card-accent: #eef2ff;
+      --stroke: #cbd5e1;
+      --stroke-accent: #4f46e5;
+      --text: #0f172a;
+      --muted: #475569;
+      --badge-bg: #4f46e5;
+      --badge-fg: #ffffff;
+      --arrow: #64748b;
+      --pill-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --card-accent: #1e1b4b;
+        --stroke: #334155;
+        --stroke-accent: #818cf8;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --badge-bg: #4f46e5;
+        --badge-fg: #ffffff;
+        --arrow: #94a3b8;
+        --pill-bg: #0f172a;
+      }
+    }
+    .canvas { fill: var(--bg, #f8fafc); }
+    .card { fill: var(--card, #ffffff); stroke: var(--stroke, #cbd5e1); stroke-width: 1.5; }
+    .card-main { fill: var(--card-accent, #eef2ff); stroke: var(--stroke-accent, #4f46e5); stroke-width: 2; }
+    .h { font: 600 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; fill: var(--text, #0f172a); }
+    .sub { font: 400 11.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; fill: var(--muted, #475569); }
+    .mid { text-anchor: middle; }
+    .mono { font: 500 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: var(--text, #0f172a); }
+    .step-num { font: 700 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; fill: var(--badge-fg, #ffffff); text-anchor: middle; }
+    .badge { fill: var(--badge-bg, #4f46e5); }
+    .pill { fill: var(--pill-bg, #f1f5f9); stroke: var(--stroke, #cbd5e1); stroke-width: 1; }
+    .line { stroke: var(--arrow, #64748b); stroke-width: 1.6; fill: none; }
+    .dash { stroke-dasharray: 5 4; }
+    .head { fill: var(--arrow, #64748b); }
+  </style>
+
+  <rect class="canvas" x="0" y="0" width="960" height="316" rx="14"/>
+
+  <!-- The browser signs the user in at OpenAI: a path over the app's card. -->
+  <path class="line dash" d="M 119 100 L 119 38 L 841 38 L 841 56"/>
+  <polygon class="head" points="841,63 836.5,55 845.5,55"/>
+  <text class="sub mid" x="480" y="28">the user signs in and approves the app</text>
+
+  <!-- Column 1: the system browser -->
+  <rect class="card" x="24" y="100" width="190" height="160" rx="10"/>
+  <text class="h" x="40" y="126">System browser</text>
+  <text class="sub" x="40" y="146">Opens the start link and</text>
+  <text class="sub" x="40" y="162">is sent on to OpenAI.</text>
+  <text class="sub" x="40" y="202">Afterwards the tab shows</text>
+  <text class="sub" x="40" y="218">the result under your</text>
+  <text class="sub" x="40" y="234">app's name.</text>
+
+  <!-- Column 2: the app with siwc -->
+  <rect class="card-main" x="330" y="64" width="300" height="232" rx="10"/>
+  <text class="h" x="346" y="90">Your app + siwc</text>
+  <text class="sub" x="346" y="108">desktop app or command-line tool</text>
+  <rect class="pill" x="346" y="122" width="268" height="34" rx="6"/>
+  <text class="mono" x="356" y="143">loopback</text>
+  <text class="sub" x="424" y="143">one-shot listener, 127.0.0.1</text>
+  <rect class="pill" x="346" y="164" width="268" height="34" rx="6"/>
+  <text class="mono" x="356" y="185">protocol</text>
+  <text class="sub" x="424" y="185">PKCE, ID token verified (RS256)</text>
+  <rect class="pill" x="346" y="206" width="268" height="34" rx="6"/>
+  <text class="mono" x="356" y="227">store</text>
+  <text class="sub" x="424" y="227">sealed or plain files, or yours</text>
+  <rect class="pill" x="346" y="248" width="268" height="34" rx="6"/>
+  <text class="mono" x="356" y="269">Transport</text>
+  <text class="sub" x="424" y="269">Https, Ureq or your own client</text>
+
+  <!-- Step 1: the app opens the start link -->
+  <path class="line" d="M 330 171 L 222 171"/>
+  <polygon class="head" points="215,171 223,166.5 223,175.5"/>
+  <circle class="badge" cx="236" cy="153" r="9"/>
+  <text class="step-num" x="236" y="157">1</text>
+  <text class="sub" x="250" y="157">start link</text>
+
+  <!-- Step 2: the browser comes back to the listener -->
+  <path class="line" d="M 214 189 L 322 189"/>
+  <polygon class="head" points="329,189 321,184.5 321,193.5"/>
+  <circle class="badge" cx="236" cy="207" r="9"/>
+  <text class="step-num" x="236" y="211">2</text>
+  <text class="sub" x="250" y="211">code</text>
+
+  <!-- Column 3: OpenAI's two hosts -->
+  <rect class="card" x="746" y="64" width="190" height="104" rx="10"/>
+  <text class="mono" x="762" y="90">auth.openai.com</text>
+  <text class="sub" x="762" y="112">sign-in and consent,</text>
+  <text class="sub" x="762" y="128">tokens, signing keys</text>
+
+  <rect class="card" x="746" y="188" width="190" height="108" rx="10"/>
+  <text class="mono" x="762" y="214">api.openai.com</text>
+  <text class="sub" x="762" y="234">the user's ChatGPT plan</text>
+  <text class="mono" x="762" y="258">GET /v1/models</text>
+  <text class="mono" x="762" y="278">POST /v1/responses</text>
+
+  <!-- Step 3: exchange the code, later renew the tokens -->
+  <path class="line" d="M 630 116 L 738 116"/>
+  <polygon class="head" points="745,116 737,111.5 737,120.5"/>
+  <circle class="badge" cx="650" cy="98" r="9"/>
+  <text class="step-num" x="650" y="102">3</text>
+  <text class="sub" x="664" y="102">exchange</text>
+  <text class="sub" x="664" y="134">renewal</text>
+
+  <!-- Step 4: plan requests with the access token -->
+  <path class="line" d="M 630 242 L 738 242"/>
+  <polygon class="head" points="745,242 737,237.5 737,246.5"/>
+  <circle class="badge" cx="650" cy="224" r="9"/>
+  <text class="step-num" x="650" y="228">4</text>
+  <text class="sub" x="664" y="228">requests</text>
+</svg>

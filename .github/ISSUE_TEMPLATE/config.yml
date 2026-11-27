@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/barnerylabs/siwc/security/advisories/new
+    about: Report a security vulnerability privately instead of opening a public issue.
